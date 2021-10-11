@@ -1,0 +1,98 @@
+version: '3.7'
+services:
+    postgres:
+        image: postgres:9.6
+        env_file:
+            - development.env
+        ports:
+            - "5433:5433"
+        logging:
+            options:
+                max-size: 10m
+                max-file: "3"
+#        networks:
+#          airflow_net:
+#            ipv4_address: 173.24.0.2
+
+#    redis:
+#        image: redis
+#        hostname: airflow_redis
+#        container_name: airflow_redis
+#        ports:
+#            - "6379:6379"
+#        networks:
+#            airflow_net:
+#                ipv4_address: 173.24.0.5
+
+    webserver:
+        image: orchestration_base:latest
+        container_name: airflow_webserver
+        hostname: airflow_webserver
+        restart: always
+        depends_on:
+            - postgres
+        env_file:
+            - development.env
+        volumes:
+            - ../code/dags:/airflow_pai/dags
+            - ../code/plugins:/airflow_pai/plugins
+            - ../code/logconfig:/airflow_pai/logconfig
+            - ../configs/airflow.cfg:/airflow_pai/airflow.cfg
+            - ../configs/unittests.cfg:/airflow_pai/unittests.cfg
+            - ../configs/webserver_config.py:/airflow_pai/webserver_config.py
+        ports:
+            - "7200:8080"
+        command: bash -c """airflow initdb && airflow webserver"""
+#        networks:
+#          airflow_net:
+#            ipv4_address: 173.24.0.3
+
+    scheduler:
+        image: orchestration_base:latest
+        container_name: airflow_scheduler
+        restart: always
+        hostname: airflow_scheduler
+        depends_on:
+            - postgres
+            - webserver
+        env_file:
+            - development.env
+        volumes:
+            - ../code/dags:/airflow_pai/dags
+            - ../code/plugins:/airflow_pai/plugins
+            - ../code/logconfig:/airflow_pai/logconfig
+            - ../configs/airflow.cfg:/airflow_pai/airflow.cfg
+            - ../configs/unittests.cfg:/airflow_pai/unittests.cfg
+            - ../configs/webserver_config.py:/airflow_pai/webserver_config.py
+        command: bash -c """airflow scheduler"""
+#        networks:
+#          airflow_net:
+#            ipv4_address: 173.24.0.4
+
+    worker:
+        image: orchestration_base:latest
+        hostname: airflow_worker
+        container_name: airflow_worker
+        restart: always
+        depends_on:
+            - scheduler
+        volumes:
+            - ../code/dags:/airflow_pai/dags
+            - ../code/plugins:/airflow_pai/plugins
+            - ../code/logconfig:/airflow_pai/logconfig
+            - ../configs/airflow.cfg:/airflow_pai/airflow.cfg
+            - ../configs/unittests.cfg:/airflow_pai/unittests.cfg
+            - ../configs/webserver_config.py:/airflow_pai/webserver_config.py
+        env_file:
+            - development.env
+        command: bash -c """airflow worker"""
+#        networks:
+#          airflow_net:
+#            ipv4_address: 173.24.0.8
+
+
+#networks:
+#  airflow_net:
+#    ipam:
+#     config:
+#      - subnet: 173.24.0.1/24
