@@ -1,2 +1,4 @@
 .idea
 venv
+dags/__pycache__/*
+dags/plugin/__pycache__/*
