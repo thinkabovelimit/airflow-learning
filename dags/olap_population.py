@@ -34,7 +34,6 @@ with DAG(
         data=json.dumps(payload),
         method='POST',
     )
-    print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
     print(populate_data.response_check)
     status_cehck=DruidJobSensor(
         http_conn_id='druid_api',

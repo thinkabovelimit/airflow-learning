@@ -5,7 +5,9 @@ from airflow import DAG
 
 from airflow.operators.bash import BashOperator
 from airflow.utils.dates import days_ago
-
+"""
+Airflow dag to to run bash commands
+"""
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
